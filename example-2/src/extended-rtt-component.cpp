@@ -27,9 +27,23 @@ ExampleRightArm::ExampleRightArm(std::string const & name) : RTT::TaskContext(na
 
     ports()->addPort(robot_feedback_port).doc("This port receives the state feedback from robot.");
 
+    // initializing data
+    robot_state = rstrt::robot::JointState(COMAN_RIGHT_ARM_DOF_SIZE);
+    q_fb.angles = robot_state.angles;
+    q_fb.angles.setZero();
+
+    q_dot = rstrt::kinematics::JointVelocities(COMAN_RIGHT_ARM_DOF_SIZE);
+    q_dot.velocities.setZero();
+
+    q_des = rstrt::kinematics::JointAngles(COMAN_RIGHT_ARM_DOF_SIZE);
+    q_des.angles.setZero();
+
     // adding operations
     addOperation("setKdGainByIndex", &ExampleRightArm::setKpGainByIndex, this, RTT::ClientThread);
-    addOperation("setKdGainByIndex", &ExampleRightArm::setKpGainByIndex, this, RTT::ClientThread);
+    addOperation("setKvGainByIndex", &ExampleRightArm::setKvGainByIndex, this, RTT::ClientThread);
+
+    Kp_gain = 10;
+    Kv_gain = 1;
 }
 
 bool ExampleRightArm::configureHook() {
@@ -47,6 +61,7 @@ bool ExampleRightArm::configureHook() {
 
 bool ExampleRightArm::startHook() {
     // this method starts the component
+//    RTT::log(RTT::Info) << "q_dot" <<q_dot<<"\n"<<"q_fb" <<q_dot<<"\n"<<"q_des"<<q_des<<RTT::endlog();
     return true;
 }
 
@@ -72,10 +87,12 @@ void ExampleRightArm::updateHook() {
 
     // actual controller!
     q_fb.angles  = robot_state.angles;
-    q_dot        = cos(getSimulationTime());
-    q_des        = sin(getSimulationTime());
+    for(int i=0; i<COMAN_RIGHT_ARM_DOF_SIZE; ++i){
+        q_dot.velocities(i) = 0.4*cos(getSimulationTime());
+        q_des.angles(i)     = 0.4*sin(getSimulationTime());
+    }
 
-    joint_torque_right_arm_command.torques = Kp*(q_des.angles - q_fb.angles) + Kv*q_dot.velocities;
+    joint_torque_right_arm_command.torques = Kp*(q_des.angles - q_fb.angles) - Kv*q_dot.velocities;
 
     // write it to port
     joint_torque_right_arm_output_port.write(joint_torque_right_arm_command);

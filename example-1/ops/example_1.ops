@@ -59,7 +59,7 @@ coman_left_arm_JointPositionCtrl.configure()
 # connect components
 
 # connect coman_left_arm_JointPositionCtrl to coman_gazebo
-var ConnPolicy cp;
+var ConnPolicy cp
 # command
 connect("coman_left_arm_JointPositionCtrl.left_arm_JointPositionCtrl", "coman_gazebo.left_arm_JointPositionCtrl", cp)
 # feedback
@@ -76,13 +76,9 @@ coman_left_arm_JointPositionCtrl.start()
 # enable physics simulation again
 gazebo.toggleDynamicsSimulation(true)
 
-
-# finally loading your component!
-# import("RttExamples")
-# # you can do displayComponentTypes
-# loadComponent("test", "ExampleLeftArm")
-# setActivity("test", 0.05, 50, ORO_SCHED_OTHER)
-# var ConnPolicy cn
-
-# connect("test.JointPositionOutputPort_left_arm", "coman_left_arm_JointPositionCtrl.command", cn)
-# test.trajectory_magnitude = 1
+import("RttExamples")
+# you can do displayComponentTypes
+loadComponent("controller_left_arm", "ExampleLeftArm")
+setActivity("controller_left_arm", 0.05, 50, ORO_SCHED_OTHER)
+var ConnPolicy cn
+connect("controller_left_arm.JointPositionOutputPort_left_arm", "coman_left_arm_JointPositionCtrl.command", cn)
