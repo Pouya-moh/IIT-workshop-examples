@@ -67,16 +67,7 @@ connect("coman_gazebo.left_arm_JointFeedback", "coman_left_arm_JointPositionCtrl
 
 
 # retrieve joint information
-
 coman_left_arm_JointPositionCtrl.retrieveJointMappings()
-
-
-# connect to outside world
-
-
-# /vol/cogimon/bin/rsb-toolscl0.13 send -I/vol/cogimon/share/rst0.13/proto/stable/ -l/vol/cogimon/share/rst0.13/proto/stable/rst/kinematics/JointAngles.proto 'pb:.rst.kinematics.JointAngles:{angles: [-0.2,0.5,0,0,0,0,0] }' 'socket:/coman/left_arm/JointPositionCtrl'
-# stream("coman_left_arm_JointPositionCtrl.command", rsb.transport.socket.scope("/coman/left_arm/JointPositionCtrl"))
-# stream("coman_left_arm_JointPositionCtrl.feedback", rsb.transport.socket.scope("/coman/left_arm/JointFeedback"))
 
 # start components
 coman_left_arm_JointPositionCtrl.start()
@@ -87,11 +78,11 @@ gazebo.toggleDynamicsSimulation(true)
 
 
 # finally loading your component!
-import("RttExamples")
-# you can do displayComponentTypes
-loadComponent("test", "ExampleLeftArm")
-setActivity("test", 0.05, 50, ORO_SCHED_OTHER)
-var ConnPolicy cn
+# import("RttExamples")
+# # you can do displayComponentTypes
+# loadComponent("test", "ExampleLeftArm")
+# setActivity("test", 0.05, 50, ORO_SCHED_OTHER)
+# var ConnPolicy cn
 
-connect("test.JointPositionOutputPort_left_arm", "coman_left_arm_JointPositionCtrl.command", cn)
-test.trajectory_magnitude = 1
+# connect("test.JointPositionOutputPort_left_arm", "coman_left_arm_JointPositionCtrl.command", cn)
+# test.trajectory_magnitude = 1
