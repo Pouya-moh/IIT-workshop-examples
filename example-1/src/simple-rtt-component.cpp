@@ -18,7 +18,7 @@ ExampleLeftArm::ExampleLeftArm(std::string const & name) : RTT::TaskContext(name
     joint_position_left_arm_output_port.setName("JointPositionOutputPort_left_arm");
     joint_position_left_arm_output_port.setDataSample(joint_position_left_arm_command);
 
-    ports()->addPort(joint_position_left_arm_output_port).doc("Output port for sending right arm refrence joint values");
+    ports()->addPort(joint_position_left_arm_output_port).doc("Output port for sending left arm refrence joint values");
 
     magnitude = 1.0;
     addProperty("trajectory_magnitude", magnitude).doc("Magnitude of sinusoidal trajectory");
