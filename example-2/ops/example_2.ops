@@ -4,13 +4,24 @@ import("kdl_typekit")
 import("rst-rt_typekit")
 
 # load transport plugins
-import("rtt_rsbcomm")
+#import("rtt_rsbcomm")
 
 # import component libs
 import("rtt_gazebo_embedded") 
 import("rtt-gazebo-robot-sim") 
 import("rtt-core-extensions") 
 
+require("os")
+
+#var string model_name = "model://iit-coman-no-forearms";
+#var string path_model_urdf = os.getenv("GAZEBO_MODEL_PATH")+"/iit-coman-no-forearms/model.urdf";
+#var string path_model_srdf = os.getenv("GAZEBO_MODEL_PATH")+"/iit-coman-no-forearms/coman_no_forearms.srdf";
+#var int DOFsize = 4;
+
+var string model_name = "model://kuka-lwr-4plus";
+var string path_model_urdf = os.getenv("GAZEBO_MODEL_PATH")+"/kuka-lwr-4plus/model.urdf";
+var string path_model_srdf = os.getenv("GAZEBO_MODEL_PATH")+"/kuka-lwr-4plus/model.srdf";
+var int DOFsize = 7;
 
 # instantiate components
 
@@ -18,20 +29,11 @@ import("rtt-core-extensions")
 loadComponent("gazebo","RTTGazeboEmbedded")
 setActivity("gazebo",0,10,ORO_SCHED_OTHER)
 gazebo.argv = strings("--verbose") 
-gazebo.add_plugin("/vol/coman/cogimon-minimal-lwr-nightly/lib/orocos/gnulinux/RTTGazeboClockPlugin/libRTTGazeboClockPlugin.so")
-# gazebo.add_plugin("libRTTGazeboClockPlugin.so")
+gazebo.add_plugin("libRTTGazeboClockPlugin.so")
 
 # robot sim
-loadComponent("coman_gazebo","cogimon::robotSim")
-setActivity("coman_gazebo",0,11,ORO_SCHED_OTHER)
-
-# JointPositionCtrl View
-loadComponent("coman_left_arm_JointPositionCtrl","cogimon::RTTKinematicChainJa")
-setActivity("coman_left_arm_JointPositionCtrl",0.01,12,ORO_SCHED_OTHER)
-
-# Right arm torque
-loadComponent("coman_right_arm_JointTorqueCtrl","cogimon::RTTKinematicChainJt")
-setActivity("coman_right_arm_JointTorqueCtrl",0.01,12,ORO_SCHED_OTHER)
+loadComponent("robot_gazebo","cogimon::robotSim")
+setActivity("robot_gazebo",0,11,ORO_SCHED_OTHER)
 
 # load simulation related parts (i.e. models)
 
@@ -42,62 +44,49 @@ gazebo.start()
 # disable the dynamics
 gazebo.toggleDynamicsSimulation(false)
 # load model
-gazebo.spawn_model("iit-coman-robot", "model://iit-coman", 10)
+gazebo.spawn_model("robotmodel", model_name, 10)
 
 
 # configure components
 
-# configure coman sim
+# configure robot sim
 # attach previously loaded model
-coman_gazebo.getModel("iit-coman-robot")
-# execute the simulation bridge (coman)
-coman_gazebo.configure()
+robot_gazebo.getModel("robotmodel")
+
+#load kinematic chains
+robot_gazebo.loadURDFAndSRDF(path_model_urdf, path_model_srdf)
+
+# execute the simulation bridge
+robot_gazebo.configure()
 
 # configure kin. chain view
-coman_left_arm_JointPositionCtrl.addPortRobotside("left_arm_JointPositionCtrl", 7)
-coman_left_arm_JointPositionCtrl.addPortRobotFBside("left_arm_JointFeedback", 7)
-coman_left_arm_JointPositionCtrl.setChainandCtrlName("left_arm", "JointPositionCtrl")
-coman_left_arm_JointPositionCtrl.configure()
-
-# same with right arm, but in torque mode!
-coman_right_arm_JointTorqueCtrl.addPortRobotside("right_arm_JointTorqueCtrl", 7)
-coman_right_arm_JointTorqueCtrl.addPortRobotFBside("right_arm_JointFeedback", 7)
-coman_right_arm_JointTorqueCtrl.setChainandCtrlName("right_arm", "JointTorqueCtrl")
-coman_right_arm_JointTorqueCtrl.configure()
-
-# connect components
-
-# connect coman_left_arm_JointPositionCtrl to coman_gazebo
-var ConnPolicy cp
-# command
-connect("coman_left_arm_JointPositionCtrl.left_arm_JointPositionCtrl", "coman_gazebo.left_arm_JointPositionCtrl", cp)
-# feedback
-connect("coman_gazebo.left_arm_JointFeedback", "coman_left_arm_JointPositionCtrl.left_arm_JointFeedback", cp)
-
-
-# right arm:
-connect("coman_right_arm_JointTorqueCtrl.right_arm_JointTorqueCtrl", "coman_gazebo.right_arm_JointTorqueCtrl", cp)
-connect("coman_gazebo.right_arm_JointFeedback", "coman_right_arm_JointTorqueCtrl.right_arm_JointFeedback", cp)
-
-# retrieve joint information
-coman_left_arm_JointPositionCtrl.retrieveJointMappings()
-coman_right_arm_JointTorqueCtrl.retrieveJointMappings()
-# start components
-coman_left_arm_JointPositionCtrl.start()
-coman_right_arm_JointTorqueCtrl.start()
+#robot_gazebo.setControlMode("right_arm", "JointTorqueCtrl")
+robot_gazebo.setControlMode("full_arm", "JointTorqueCtrl")
 
 # enable physics simulation again
 gazebo.toggleDynamicsSimulation(true)
 
-
-# finally loading your component!
-import("RttExamples")
+import("RttExamples2")
 # you can do displayComponentTypes
-loadComponent("controller_right_arm", "ExampleRightArm")
-loadComponent("controller_left_arm", "ExampleLeftArm")
-setActivity("controller_right_arm", 0.05, 50, ORO_SCHED_OTHER)
-setActivity("controller_left_arm", 0.05, 50, ORO_SCHED_OTHER)
-var ConnPolicy cn
-connect("controller_right_arm.JointPositionOutputPort_right_arm", "coman_right_arm_JointTorqueCtrl.command", cn)
-connect("controller_right_arm.RobotStateFeedback", "coman_right_arm_JointTorqueCtrl.feedback", cn)
-connect("controller_left_arm.JointPositionOutputPort_left_arm", "coman_left_arm_JointPositionCtrl.command", cn)
+
+loadComponent("myTorqueController", "ExtendedExample")
+setActivity("myTorqueController", 0.05, 50, ORO_SCHED_OTHER)
+
+myTorqueController.setDOFsize(DOFsize)
+
+var ConnPolicy cp
+#connect("robot_gazebo.right_arm_JointFeedback", "myTorqueController.in_robotstatus_port", cp)
+connect("robot_gazebo.full_arm_JointFeedback", "myTorqueController.in_robotstatus_port", cp)
+
+#connect("myTorqueController.out_torques_port", "robot_gazebo.right_arm_JointTorqueCtrl", cp)
+connect("myTorqueController.out_torques_port", "robot_gazebo.full_arm_JointTorqueCtrl", cp)
+
+myTorqueController.configure()
+myTorqueController.start()
+
+#generate graph file
+import("rtt_dot_service")           
+loadService("this", "dot")
+dot.generate 
+
+

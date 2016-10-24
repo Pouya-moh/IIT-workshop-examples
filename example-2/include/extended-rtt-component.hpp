@@ -5,8 +5,7 @@
  *              modified and extended by users to accomodate their needs.
  */
 
-#ifndef EXTENDEDRTTCOMPONENT_HPP
-#define EXTENDEDRTTCOMPONENT_HPP
+#pragma once
 
 // RTT header files. Might missing some or some be unused
 #include <rtt/Port.hpp>
@@ -20,11 +19,9 @@
 #include <rst-rt/robot/JointState.hpp>
 
 
-#define COMAN_RIGHT_ARM_DOF_SIZE 7
-
-class ExampleRightArm: public RTT::TaskContext {
+class ExtendedExample: public RTT::TaskContext {
 public:
-    ExampleRightArm(std::string const & name);
+    ExtendedExample(std::string const & name);
 
     // RTT::TaskContext methods that are needed for any standard component and
     // should be implemented by user
@@ -36,34 +33,34 @@ public:
 
 private:
     // Declare ports and their datatypes
-    RTT::OutputPort<rstrt::dynamics::JointTorques> joint_torque_right_arm_output_port;
-    RTT::InputPort<rstrt::robot::JointState> robot_feedback_port; //Input!
+    RTT::InputPort<rstrt::robot::JointState> in_robotstatus_port;
+    RTT::OutputPort<rstrt::dynamics::JointTorques> out_torques_port;
 
     // Data flow:
-    RTT::FlowStatus robot_feedback_flow;
+    RTT::FlowStatus in_robotstatus_flow;
 
     // Actuall joint command to be sent over port:
-    rstrt::dynamics::JointTorques joint_torque_right_arm_command;
-    rstrt::kinematics::JointVelocities q_dot;
+    rstrt::robot::JointState in_robotstatus_var;
+    rstrt::dynamics::JointTorques out_torques_var;
     rstrt::kinematics::JointAngles q_des;
-    rstrt::kinematics::JointAngles q_fb;
+    rstrt::kinematics::JointVelocities qDot_des;
 
-    rstrt::robot::JointState robot_state;
-
-    // helpers:
-    double getSimulationTime();
+    unsigned int DOFsize;
+    double magnitude;
 
     // some gains:
     Eigen::MatrixXf Kp;
     Eigen::MatrixXf Kv;
-    float Kp_gain;
-    float Kv_gain;
 
     // operations:
+    void setKpGain(float value);
+    void setKvGain(float value);
     void setKpGainByIndex(int idx, float value);
     void setKvGainByIndex(int idx, float value);
+    void setDOFsize(unsigned int DOFsize);
+    void printCurrentState();
 
-
+    // helpers:
+    double getSimulationTime();
 };
 
-#endif // SIMPLERTTCOMPONENT_HPP

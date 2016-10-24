@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 2.8.3)
 # This creates a standard cmake project. You may extend this file with
 # any cmake macro you see fit.
 #
-project(RttExamples)
+project(RttExamples1)
  
 # current source and include:
 include_directories(${PROJECT_SOURCE_DIR}/include)
@@ -43,8 +43,8 @@ include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
 # Creates a component library libexample-<target>.so
 # and installs in the directory lib/orocos/example/
 #
-# orocos_component(${CMAKE_PROJECT_NAME} simple-rtt-component.hpp simple-rtt-component.cpp) # ...you may add multiple source files
-orocos_component(${CMAKE_PROJECT_NAME} ${PROJECT_SOURCE_DIR}/include/simple-rtt-component.hpp 
+orocos_component(${CMAKE_PROJECT_NAME} 
+									   ${PROJECT_SOURCE_DIR}/include/simple-rtt-component.hpp 
 									   ${PROJECT_SOURCE_DIR}/src/simple-rtt-component.cpp) # ...you may add multiple source files
 #
 # You may add multiple orocos_component statements.
